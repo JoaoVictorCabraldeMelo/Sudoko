@@ -63,7 +63,7 @@ class Tabuleiro : public vector<Celula>{
 			
 			for(int i = 0; i < 9; ++i){
 				for(int j = 0; j < 9; ++j){
-					//cout << self[Tabuleiro::MatrizCoordToVectorCoord(i, j)] << "\t";
+					cout << self[Tabuleiro::MatrizCoordToVectorCoord(i, j)].Valor() << "\t";
 					if(i%3 == 2){
 						cout << "|";
 					}
@@ -140,6 +140,8 @@ int main (){
     tabuleiro[80] = {6, 1};
 
     priority_queue<pair<int, int>, vector<pair<int, int>>, less<pair<int, int>>> fila;
+
+    cout << Matriz[0].size() << endl;
     
     for (int i = 0; i < 81; i++){
         set <int> aux;
@@ -154,7 +156,7 @@ int main (){
     }
     
 
-
+    //tabuleiro.printaTaduleiro();
 
 
 
