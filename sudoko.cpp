@@ -88,15 +88,12 @@ ListaAdjacencia RetornaListaAdjencia(){
             cadaCelula.insert(j);
         }
 
-        l = i - (i%3);
-
-        int moverpracima = l - (l%3 * 9);
-
-        for (int j = 1; j <= 3; j++){
+        int base = (((i - i%3)/9) - ((i - i%3)/9)%3) * 9 + (i - i%3)%9;
+        
+        for (int j = 0; j < 3; j++){
             for (int k = 0; k < 3; k++){
-                cadaCelula.insert(moverpracima + k);
+                cadaCelula.insert(base + j*9+k);
             }
-            moverpracima = moverpracima + 9;
         }
 
         cadaCelula.erase(i);
@@ -142,6 +139,7 @@ int main (){
     priority_queue<pair<int, int>, vector<pair<int, int>>, less<pair<int, int>>> fila;
 
     cout << Matriz[0].size() << endl;
+    cout << Matriz[0][11] << endl;
     
     for (int i = 0; i < 81; i++){
         set <int> aux;
@@ -156,7 +154,7 @@ int main (){
     }
     
 
-    //tabuleiro.printaTaduleiro();
+    tabuleiro.printaTaduleiro();
 
 
 
