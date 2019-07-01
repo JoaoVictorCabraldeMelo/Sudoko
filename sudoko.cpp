@@ -1,4 +1,13 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <set>
+#include <map>
+#include <queue>
+#include <vector>
+#include <utility>
+#include <string>
+#include <functional>
+#include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
@@ -59,16 +68,19 @@ class Tabuleiro : public vector<Celula>{
 
 		void printaTaduleiro(){
 			auto &self = *this;
-			cout << "------------\n" << endl;
-			
+			cout << "-------------------------------------------------------------------------\n";
 			for(int i = 0; i < 9; ++i){
+			    cout << "|";
 				for(int j = 0; j < 9; ++j){
 					cout << self[Tabuleiro::MatrizCoordToVectorCoord(i, j)].Valor() << "\t";
-					if(i%3 == 2){
+					if(j%3 == 2){
 						cout << "|";
 					}
 				}
-				cout << "\n------------\n";
+                cout << "\n";
+                if(i%3 == 2){
+                    cout << "------------------------------------------------------------------------\n";
+                }
 			}
 		}
 };
@@ -110,6 +122,8 @@ int main (){
     ListaAdjacencia Matriz = RetornaListaAdjencia();
     Tabuleiro tabuleiro;
 
+    
+
     tabuleiro[0] = {8, 1};
     tabuleiro[3] = {1, 1};
     tabuleiro[4] = {5, 1};
@@ -136,29 +150,165 @@ int main (){
     tabuleiro[77] = {7, 1};
     tabuleiro[80] = {6, 1};
 
-    priority_queue<pair<int, int>, vector<pair<int, int>>, less<pair<int, int>>> fila;
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> fila;
+    vector<int> qtdDisp(81, 0);
+    vector<set<int>> valDisp(81, {1, 2, 3, 4, 5, 6, 7, 8, 9});
+    vector<map<int, int>> qtdValDisp(81, {{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}});
 
     cout << Matriz[0].size() << endl;
     cout << Matriz[0][11] << endl;
     
     for (int i = 0; i < 81; i++){
-        set <int> aux;
-        for (int j = 0; j < Matriz[i].size(); j++){
-            auto &p = Matriz[i][j];
-            if (tabuleiro[p].Valor() != 0){
-                aux.insert(tabuleiro[p].Valor());
+        if(tabuleiro[i].Valor() == 0){
+            for (int j = 0; j < Matriz[i].size(); j++){
+                auto &p = Matriz[i][j];
+                qtdValDisp[i][p]++;
+                valDisp[i].erase(tabuleiro[p].Valor());
             }
-            fila.push({aux.size(),i});
+            qtdDisp[i] = valDisp[i].size();
+            fila.push({qtdDisp[i], i});
         }
-        
+    }
+
+    int z = 0;
+    while(!fila.empty()){
+
+        auto topFila = fila.top();
+        fila.pop();
+
+        auto disp = topFila.first;
+        auto celula = topFila.second;
+            if(celula == 5){
+                cout << "Ola eu sou goku" << endl;
+            }
+
+        if(qtdDisp[celula] == disp && tabuleiro[celula].Pode() == 0 && tabuleiro[celula].Valor() == 0){
+            auto valorDisp = *valDisp[celula].begin();
+            valDisp[celula].erase(valorDisp);
+            tabuleiro[celula].Valor() = valorDisp;
+            cerr << celula << " " << valorDisp << endl;
+            for(auto &p : Matriz[celula]){
+                if(tabuleiro[p].Pode() == 0){
+                    valDisp[p].erase(valorDisp);
+                    qtdValDisp[celula][p]++;
+                    qtdDisp[p] = valDisp[p].size();
+                    if(qtdDisp[p] == 0 && tabuleiro[p].Valor() == 0)
+                        fila.push({30, p});
+                    else if(tabuleiro[p].Valor() == 0)
+                        fila.push({qtdDisp[p], p});
+                }
+            }
+            system("cls");
+            tabuleiro.printaTaduleiro();
+        } 
+        else if((disp == 0 || disp == 30) && tabuleiro[celula].Pode() == 0 && tabuleiro[celula].Valor() == 0){
+            if(disp == 0){
+                fila.push({30, celula});
+                continue;
+            }
+            z++;
+            vector<int> cpy(Matriz[celula].begin(), Matriz[celula].end());
+            sort(cpy.begin(), cpy.end(), [&qtdDisp](int a, int b){
+                return qtdDisp[a] > qtdDisp[b];
+            });
+            vector<pair<int, int>> vet{{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}, {0, 8}, {0, 9}};
+            int valAlterar = 0, qtdValAlterar = 0;
+            for(auto&p : Matriz[celula]){
+                if(tabuleiro[p].Valor() != 0 && tabuleiro[p].Pode() == 0){
+                    vet[tabuleiro[p].Valor() - 1].first++;
+                }
+            }
+            sort(vet.begin(), vet.end());
+            for (auto &p : vet){
+                if(p.first != 0){
+                    qtdValAlterar = p.first;
+                    valAlterar = p.second;
+                    break;
+                }
+            }
+
+            tabuleiro[celula].Valor() = valAlterar;
+
+            if(qtdValAlterar == 1 || true){
+                for(auto&p : Matriz[celula]){
+                    if(tabuleiro[p].Valor() == valAlterar){
+                        tabuleiro[p].Valor() = 0;
+                        for(auto&q : Matriz[p]){
+                            if(q != celula){
+                                qtdValDisp[q][valAlterar]--;
+                                if(qtdValDisp[q][valAlterar] <= 0 && tabuleiro[q].Pode() == 0){
+                                    qtdValDisp[q][valAlterar] = 0;
+                                    valDisp[q].insert(valAlterar);
+                                    qtdDisp[q] = valDisp[q].size();
+                                    if(tabuleiro[q].Valor() == 0);
+                                        fila.push({qtdDisp[q], q});
+                                } else if(tabuleiro[q].Pode() == 0 && tabuleiro[q].Valor() == 0){
+                                        fila.push({qtdDisp[q], q});
+                                }
+                            }
+                        }
+                        for(auto&q : Matriz[celula]){
+                            if(q != p){
+                                qtdValDisp[p][valAlterar]++;
+                                    
+                                valDisp[p].erase(valAlterar);
+                                qtdDisp[p] = valDisp[p].size();
+                                if(qtdDisp[q] == 0 && tabuleiro[q].Valor() == 0 && tabuleiro[q].Pode() == 0)
+                                    fila.push({30, q});
+                                else if(tabuleiro[q].Valor() == 0 && tabuleiro[q].Pode() == 0)
+                                    fila.push({qtdDisp[q], q});
+                            }
+                        }
+                    }
+                }
+            }
+            
+            tabuleiro[celula].Valor() = valAlterar;
+            system("cls");
+            tabuleiro.printaTaduleiro();
+
+            
+            // if(qtdDisp[cpy[0]] > 0){
+            //     tabuleiro[cpy[0]].Valor() = 0;
+            //     auto valorProcura = *valDisp[cpy[0]].begin();
+            //     bool flag = true;
+                
+            //     for(auto &p : Matriz[cpy[0]]){
+            //         qtdValDisp[p][valorProcura]--;
+            //         if(qtdValDisp[p][valorProcura] <= 0){
+            //             qtdValDisp[p][valorProcura] = 0;
+            //             valDisp[p].insert(valorProcura);
+            //             qtdDisp[p] = valDisp[p].size();
+            //             fila.push({qtdDisp[p], p});
+            //         }
+            //     }
+
+            //     for(auto &p : Matriz[celula]){
+            //         if(tabuleiro[p].Valor() == valorProcura){
+            //             flag = false;
+            //         }
+            //     }
+
+            //     if(flag){
+            //         tabuleiro[celula].Valor() = valorProcura;
+            //         for(auto &p : Matriz[celula]){
+            // if(qtdDisp[celula] == disp && disp == 0 && tabuleiro[celula].Pode() == 0 && tabuleiro[celula].Valor() == 0){
+            //             if(tabuleiro[p].Pode() == 0){
+            //                 valDisp[p].erase(valorProcura);
+            //                 qtdValDisp[celula][p]++;
+            //                 qtdDisp[p] = valDisp[p].size();
+            //                 fila.push({qtdDisp[p], p});
+            //             }
+            //         }
+            //     }
+
+
+
+        }
     }
     
-
-    tabuleiro.printaTaduleiro();
-
-
-
-
+            system("cls");
+            tabuleiro.printaTaduleiro();
 
     return 0;
 }
